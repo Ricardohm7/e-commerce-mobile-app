@@ -1,12 +1,25 @@
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { ProductsDetailsScreenProps } from '../navigation/ProductStack'
 import { fetchProductDetails, Product } from '../api/api'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import useCartStore from '../state/cartStore'
+import { Ionicons } from '@expo/vector-icons';
 
 const ProductDetails = ({ route }: ProductsDetailsScreenProps) => {
   const { id } = route.params
   const [product, setProduct] = useState<Product | null>(null)
+  const { products, addProduct, reduceProduct } = useCartStore((state) => ({
+    products: state.products,
+    addProduct: state.addProduct,
+    reduceProduct: state.reduceProduct
+  }))
+
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    updateProductQuantity()
+  }, [products])
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -20,6 +33,16 @@ const ProductDetails = ({ route }: ProductsDetailsScreenProps) => {
     fetchProduct()
   }, [id])
 
+
+  const updateProductQuantity = () => {
+    const result = products.filter((product) => product.id === id);
+    if (result.length > 0) {
+      setCount(result[0].quantity);
+    } else {
+      setCount(0);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {product && (
@@ -30,6 +53,15 @@ const ProductDetails = ({ route }: ProductsDetailsScreenProps) => {
           <Text style={styles.productCategory}>{product.product_category}</Text>
           <Text style={styles.productDescription}>{product.product_description}</Text>
           <Text style={styles.productPrice}>{product.product_price}</Text>
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity style={styles.button} onPress={() => reduceProduct(product)}>
+              <Ionicons name="remove" size={24} color={'#1FE687'} />
+            </TouchableOpacity>
+            <Text style={styles.quantity}>{count}</Text>
+            <TouchableOpacity style={styles.button} onPress={() => addProduct(product)}>
+              <Ionicons name="add" size={24} />
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </SafeAreaView>
@@ -66,5 +98,27 @@ const styles = StyleSheet.create({
   productDescription: {
     marginTop: 10,
     fontSize: 16,
+  },
+  buttonsContainer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 20,
+  },
+  button: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    flex: 1,
+    borderColor: '#1FE687',
+    borderWidth: 2,
+  },
+  quantity: {
+    fontSize: 20,
+    width: 50,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 })
