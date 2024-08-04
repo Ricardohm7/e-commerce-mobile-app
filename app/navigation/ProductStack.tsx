@@ -4,6 +4,15 @@ import ProductDetails from "../screens/ProductDetails";
 import CartModal from "../screens/CartModal";
 import { NavigationProp } from "@react-navigation/native";
 import CartButton from "./CartButton";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { Ionicons } from '@expo/vector-icons';
+
+export type RootDrawerParamList = {
+  ProductsStack: undefined;
+  Settings: undefined;
+  // Add other drawer screens here
+};
 
 type ProductsStackParamList = {
   Products: undefined,
@@ -13,11 +22,15 @@ type ProductsStackParamList = {
 
 const ProductsStack = createNativeStackNavigator<ProductsStackParamList>();
 
+type ProductsStackNavProps = {
+  navigation: DrawerNavigationProp<RootDrawerParamList, 'ProductsStack'>
+}
+
 export type ProductsScreenProps = NativeStackScreenProps<ProductsStackParamList, 'Products'>
 export type ProductsDetailsScreenProps = NativeStackScreenProps<ProductsStackParamList, 'ProductDetails'>
 export type StackNavigation = NavigationProp<ProductsStackParamList>
 
-const ProductsStackNav = () => {
+const ProductsStackNav: React.FC<ProductsStackNavProps> = ({ navigation }) => {
   return (
     <ProductsStack.Navigator screenOptions={{
       headerStyle: {
@@ -25,6 +38,11 @@ const ProductsStackNav = () => {
       },
       headerTintColor: '#141414',
       headerRight: () => <CartButton />,
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+          <Ionicons name="menu" size={24} color="#141414" />
+        </TouchableOpacity>
+      )
     }}>
       <ProductsStack.Screen
         name="Products"
